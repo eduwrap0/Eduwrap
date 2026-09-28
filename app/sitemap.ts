@@ -6,6 +6,10 @@ import { connectMongoDB } from "@/lib/mongodb";
 import { BlogPost } from "@/models/BlogPost";
 import { BlogStatus } from "@/types/blog";
 
+// The sitemap includes database-backed blog URLs. Generate it on request so a
+// temporarily unreachable database cannot block the production build.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const updated = new Date();
   let blogEntries: MetadataRoute.Sitemap = [];
