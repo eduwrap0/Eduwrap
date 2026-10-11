@@ -26,6 +26,7 @@ type SecurityAction =
   | "gallery_image_deleted"
   | "video_testimonial_created"
   | "video_testimonial_updated"
+  | "video_testimonial_thumbnail_updated"
   | "video_testimonial_deleted"
   | "video_testimonials_published"
   | "video_testimonials_hidden"
