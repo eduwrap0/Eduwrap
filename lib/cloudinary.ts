@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { MAX_TESTIMONIAL_VIDEO_BYTES, MAX_TESTIMONIAL_VIDEO_LABEL } from "@/lib/video-testimonial-limits";
+import { MAX_TESTIMONIAL_THUMBNAIL_BYTES, MAX_TESTIMONIAL_VIDEO_BYTES, MAX_TESTIMONIAL_VIDEO_LABEL } from "@/lib/video-testimonial-limits";
 
 const MAX_PROFILE_IMAGE_BYTES = 200 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -321,5 +321,37 @@ export async function deleteTestimonialVideo(publicId: string): Promise<boolean>
   const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/destroy`, { method: "POST", body, cache: "no-store" });
   const result = await response.json() as { result?: string; error?: { message?: string } };
   if (!response.ok) throw new Error(result.error?.message || "Cloudinary video deletion failed.");
+  return result.result === "ok" || result.result === "not found";
+}
+
+export async function uploadTestimonialThumbnail(file: File): Promise<{ url: string; publicId: string }> {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) throw new Error("Only JPG, PNG, and WebP thumbnails are allowed.");
+  if (!/\.(?:jpe?g|png|webp)$/i.test(file.name)) throw new Error("The thumbnail filename must use JPG, PNG, or WebP.");
+  if (file.size === 0 || file.size > MAX_TESTIMONIAL_THUMBNAIL_BYTES) throw new Error("Thumbnails must be no larger than 5 MB.");
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!hasValidImageSignature(buffer, file.type)) throw new Error("The uploaded thumbnail is not a valid image.");
+  const { cloudName, apiKey, apiSecret } = cloudinaryConfig();
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const folder = "eduwrap/video-testimonial-thumbnails";
+  const signature = createHash("sha1").update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`).digest("hex");
+  const body = new FormData();
+  body.set("file", new Blob([buffer], { type: file.type }), file.name);
+  body.set("api_key", apiKey); body.set("timestamp", timestamp); body.set("folder", folder); body.set("signature", signature);
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body, cache: "no-store" });
+  const result = await response.json() as { secure_url?: string; public_id?: string; error?: { message?: string } };
+  if (!response.ok || !result.secure_url || !result.public_id) throw new Error(result.error?.message || "Cloudinary thumbnail upload failed.");
+  return { url: result.secure_url, publicId: result.public_id };
+}
+
+export async function deleteTestimonialThumbnail(publicId: string): Promise<boolean> {
+  if (!publicId.startsWith("eduwrap/video-testimonial-thumbnails/")) return false;
+  const { cloudName, apiKey, apiSecret } = cloudinaryConfig();
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = createHash("sha1").update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`).digest("hex");
+  const body = new FormData();
+  body.set("public_id", publicId); body.set("api_key", apiKey); body.set("timestamp", timestamp); body.set("signature", signature);
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, { method: "POST", body, cache: "no-store" });
+  const result = await response.json() as { result?: string; error?: { message?: string } };
+  if (!response.ok) throw new Error(result.error?.message || "Cloudinary thumbnail deletion failed.");
   return result.result === "ok" || result.result === "not found";
 }

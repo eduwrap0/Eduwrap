@@ -57,7 +57,7 @@ export function BatchImages({ images, title = "Batch Images" }: { images: Galler
   };
 
   return <section className="classroom-moments-section overflow-x-hidden">
-    <div className="container"><div className="classroom-moments-heading text-center"><span>Inside EduWrap</span><h2 className="fw-bold">{title}</h2><p>Explore classroom moments at EduWrap Computer Training Institute in Zirakpur, where students build skills through practical computer training. See our learners gaining hands-on experience in professional courses.</p></div></div>
+    <div className="container"><div className="classroom-moments-heading text-center"><span>Inside EduWrap</span><h2 className="fw-bold">{title}</h2><p>Explore classroom moments at EduWrap Computer Training Institute, where students build skills through practical computer training. See our learners gaining hands-on experience in professional courses.</p></div></div>
     <div className="container-fluid classroom-gallery-container"><div className="classroom-gallery-shell"><div className="slider-section"><div className="marquee-container" ref={marquee} onMouseEnter={() => { paused.current = true; }} onMouseLeave={() => { paused.current = false; }}>{track("original")}{track("copy")}</div></div></div></div>
     {preview && <div id="imageModal" className="image-modal-open" role="dialog" aria-modal="true" aria-label="Batch image preview" onClick={() => setPreview(null)}><button className="close-btn" aria-label="Close preview" onClick={() => setPreview(null)}>&times;</button><Image id="previewImg" src={preview.imageUrl} alt={preview.altTag} width={960} height={640} onClick={(event) => event.stopPropagation()} /></div>}
   </section>;

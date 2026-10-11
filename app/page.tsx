@@ -40,9 +40,9 @@ export default async function HomePage() {
   return <main>
     <Hero
       home
-      title="Professional Courses for Job-Ready Skills and Career Growth"
+      title="Professional Computer Courses for Job-Ready Skills and Career Growth"
       text="Learn a skill. Build your confidence. Get ready for your next job."
-      supportingText="At EduWrap, we are a Professional Courses Training institute where students and working professionals can learn skills in a simple and practical way."
+      supportingText="At Eduwrap, we are a professional computer training institute where students and working professionals can learn practical skills in a simple and easy-to-understand way."
     />
     <BatchImages images={galleryImages} title="Classroom Moments" />
     <section id="explore-programs" className="programs-intro-section">

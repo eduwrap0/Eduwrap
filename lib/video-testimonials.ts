@@ -3,10 +3,10 @@ import { connectMongoDB } from "@/lib/mongodb";
 import { VideoTestimonial, type IVideoTestimonial } from "@/models/VideoTestimonial";
 import type { VideoTestimonialRecord } from "@/types/video-testimonial";
 
-type VideoSource = Pick<IVideoTestimonial, "studentName" | "videoUrl" | "cloudinaryPublicId" | "videoAltText" | "displayOrder" | "isActive" | "uploadDate"> & { _id: unknown };
+type VideoSource = Pick<IVideoTestimonial, "studentName" | "videoUrl" | "cloudinaryPublicId" | "thumbnailUrl" | "videoAltText" | "displayOrder" | "isActive" | "uploadDate"> & { _id: unknown };
 
 export function toVideoTestimonialRecord(video: VideoSource): VideoTestimonialRecord {
-  return { id: String(video._id), studentName: video.studentName, videoUrl: video.videoUrl, cloudinaryPublicId: video.cloudinaryPublicId, videoAltText: video.videoAltText, displayOrder: video.displayOrder, isActive: video.isActive, uploadDate: video.uploadDate.toISOString() };
+  return { id: String(video._id), studentName: video.studentName, videoUrl: video.videoUrl, cloudinaryPublicId: video.cloudinaryPublicId, thumbnailUrl: video.thumbnailUrl, videoAltText: video.videoAltText, displayOrder: video.displayOrder, isActive: video.isActive, uploadDate: video.uploadDate.toISOString() };
 }
 
 export async function getPublicVideoTestimonials(): Promise<VideoTestimonialRecord[]> {

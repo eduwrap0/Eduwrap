@@ -1,7 +1,7 @@
 import mongoose, { Schema, type HydratedDocument, type Model, type Types } from "mongoose";
 
 export interface IVideoTestimonial {
-  studentName: string; videoUrl: string; cloudinaryPublicId: string; videoAltText: string;
+  studentName: string; videoUrl: string; cloudinaryPublicId: string; thumbnailUrl?: string; thumbnailPublicId?: string; videoAltText: string;
   displayOrder: number; isActive: boolean; uploadDate: Date; uploadedBy: Types.ObjectId;
   createdAt: Date; updatedAt: Date;
 }
@@ -11,6 +11,8 @@ const videoTestimonialSchema = new Schema<IVideoTestimonial>({
   studentName: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
   videoUrl: { type: String, required: true, trim: true, maxlength: 700 },
   cloudinaryPublicId: { type: String, required: true, unique: true, trim: true, maxlength: 300 },
+  thumbnailUrl: { type: String, trim: true, maxlength: 700 },
+  thumbnailPublicId: { type: String, trim: true, maxlength: 300 },
   videoAltText: { type: String, required: true, trim: true, minlength: 2, maxlength: 180 },
   displayOrder: { type: Number, required: true, min: 0, max: 10000, default: 0, index: true },
   isActive: { type: Boolean, required: true, default: false, index: true },

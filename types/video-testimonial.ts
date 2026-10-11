@@ -3,6 +3,7 @@ export interface VideoTestimonialRecord {
   studentName: string;
   videoUrl: string;
   cloudinaryPublicId: string;
+  thumbnailUrl?: string;
   videoAltText: string;
   displayOrder: number;
   isActive: boolean;

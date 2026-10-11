@@ -5,14 +5,14 @@ import { site } from "@/content/site";
 import { connectMongoDB } from "@/lib/mongodb";
 import { SeoSettings, type ISeoPageSettings, type ISeoSettings } from "@/models/SeoSettings";
 
-export type SeoSettingsRecord = Pick<ISeoSettings, "pages" | "sitewideTags">;
+export type SeoSettingsRecord = Pick<ISeoSettings, "pages">;
 
 const emptySettings: SeoSettingsRecord = { pages: [] };
 
 export const getSeoSettings = cache(async (): Promise<SeoSettingsRecord> => {
   try {
     await connectMongoDB();
-    const settings = await SeoSettings.findOne({ key: "global" }).lean<SeoSettingsRecord | null>();
+    const settings = await SeoSettings.findOne({ key: "global" }).select("pages.path pages.title pages.description pages.keywords pages.canonicalUrl pages.openGraphTitle pages.openGraphDescription pages.openGraphImage").lean<SeoSettingsRecord | null>();
     return settings || emptySettings;
   } catch { return emptySettings; }
 });
@@ -36,6 +36,9 @@ export async function applySeoMetadata(path: string, defaults: Metadata): Promis
   const canonical = canonicalOverride || defaults.alternates?.canonical;
   const defaultOg = defaults.openGraph;
   const image = seo.openGraphImage || (defaultOg && "images" in defaultOg ? defaultOg.images : undefined);
+  const defaultTwitter = defaults.twitter;
+  const openGraphTitle = seo.openGraphTitle || title;
+  const openGraphDescription = seo.openGraphDescription || description;
   return {
     ...defaults,
     ...(title ? { title } : {}),
@@ -44,15 +47,18 @@ export async function applySeoMetadata(path: string, defaults: Metadata): Promis
     alternates: { ...defaults.alternates, ...(canonical ? { canonical } : {}) },
     openGraph: {
       ...defaultOg,
-      title: seo.openGraphTitle || title,
-      description: seo.openGraphDescription || description,
+      title: openGraphTitle,
+      description: openGraphDescription,
       ...(canonicalOverride ? { url: canonicalOverride } : {}),
       ...(image ? { images: image } : {}),
+    },
+    twitter: {
+      ...defaultTwitter,
+      title: openGraphTitle || defaultTwitter?.title,
+      description: openGraphDescription || defaultTwitter?.description,
+      ...(seo.openGraphImage ? { images: [seo.openGraphImage] } : {}),
+      ...(seo.openGraphImage ? { card: "summary_large_image" as const } : {}),
     },
   };
 }
 
-export function parseStructuredData(value?: string): unknown[] {
-  if (!value) return [];
-  try { const parsed: unknown = JSON.parse(value); return Array.isArray(parsed) ? parsed : [parsed]; } catch { return []; }
-}

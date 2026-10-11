@@ -32,9 +32,10 @@ export function Header() {
 
   const active = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
   const isBlogArticle = pathname.startsWith("/blog/");
+  const isThankYouPage = pathname === "/thank-you";
 
   return (
-    <nav className={`navbar navbar-expand-lg navbar-dark nav-color${pathname === "/about" ? " about-navbar" : ""}${isBlogArticle ? " blog-navbar" : ""}${scrolled ? " scrolled" : ""}`} aria-label="Main navigation">
+    <nav className={`navbar navbar-expand-lg navbar-dark nav-color${pathname === "/about" ? " about-navbar" : ""}${isBlogArticle ? " blog-navbar" : ""}${isThankYouPage ? " thank-you-navbar" : ""}${scrolled ? " scrolled" : ""}`} aria-label="Main navigation">
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" href="/" onClick={closeMenu}>
           <Image src="/assets/images/logo-light-60a64c68.webp" alt="EduWrap" width={1932} height={426} className="light-logo" priority />

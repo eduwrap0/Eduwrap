@@ -9,14 +9,11 @@ export interface ISeoPageSettings {
   openGraphTitle?: string;
   openGraphDescription?: string;
   openGraphImage?: string;
-  structuredData?: string;
-  customTags?: string;
 }
 
 export interface ISeoSettings {
   key: "global";
   pages: ISeoPageSettings[];
-  sitewideTags?: string;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -31,14 +28,11 @@ const pageSchema = new Schema<ISeoPageSettings>({
   openGraphTitle: { type: String, trim: true },
   openGraphDescription: { type: String, trim: true },
   openGraphImage: { type: String, trim: true },
-  structuredData: { type: String, trim: true },
-  customTags: { type: String },
 }, { _id: false });
 
 const seoSettingsSchema = new Schema<ISeoSettings>({
   key: { type: String, enum: ["global"], default: "global", unique: true, immutable: true },
   pages: { type: [pageSchema], default: [] },
-  sitewideTags: { type: String },
   updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });
 

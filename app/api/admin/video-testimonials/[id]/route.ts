@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
 import { authorizeApi, hasValidRequestOrigin } from "@/lib/auth";
-import { deleteTestimonialVideo } from "@/lib/cloudinary";
+import { deleteTestimonialThumbnail, deleteTestimonialVideo } from "@/lib/cloudinary";
 import { connectMongoDB } from "@/lib/mongodb";
 import { auditSecurityEvent } from "@/lib/security-audit";
 import { objectIdSchema } from "@/lib/validators/auth";
@@ -33,6 +33,7 @@ export async function DELETE(request: NextRequest, context: Context) {
   try {
     await connectMongoDB(); const testimonial = await VideoTestimonial.findById(id.data); if (!testimonial) return apiError("Video testimonial not found", 404);
     const removed = await deleteTestimonialVideo(testimonial.cloudinaryPublicId); if (!removed) return apiError("The video could not be removed from Cloudinary", 502);
+    if (testimonial.thumbnailPublicId && !(await deleteTestimonialThumbnail(testimonial.thumbnailPublicId))) return apiError("The thumbnail could not be removed from Cloudinary", 502);
     await testimonial.deleteOne(); revalidatePath("/"); auditSecurityEvent("video_testimonial_deleted", auth.user._id.toString(), testimonial._id.toString());
     return apiSuccess("Video testimonial deleted", {});
   } catch (error) { return apiError(error instanceof Error ? error.message : "Unable to delete video testimonial", 500); }

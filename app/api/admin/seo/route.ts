@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
   if (!auth.ok) return auth.response;
   try {
     await connectMongoDB();
-    const settings = await SeoSettings.findOne({ key: "global" }).lean();
-    return apiSuccess("SEO settings retrieved", settings || { pages: [], sitewideTags: "" });
+    await SeoSettings.collection.updateOne({ key: "global" }, { $unset: { sitewideTags: 1, "pages.$[].customTags": 1, "pages.$[].structuredData": 1 } });
+    const settings = await SeoSettings.findOne({ key: "global" }).select("pages.path pages.title pages.description pages.keywords pages.canonicalUrl pages.openGraphTitle pages.openGraphDescription pages.openGraphImage").lean();
+    return apiSuccess("SEO settings retrieved", settings || { pages: [] });
   } catch { return apiError("Unable to retrieve SEO settings", 500); }
 }
 
@@ -40,12 +41,10 @@ export async function PUT(request: NextRequest) {
       openGraphTitle: page.openGraphTitle || undefined,
       openGraphDescription: page.openGraphDescription || undefined,
       openGraphImage: page.openGraphImage || undefined,
-      structuredData: page.structuredData || undefined,
-      customTags: page.customTags || undefined,
     }));
     await SeoSettings.findOneAndUpdate(
       { key: "global" },
-      { $set: { pages, sitewideTags: value.sitewideTags || undefined, updatedBy: auth.user._id }, $unset: { googleAnalyticsId: 1, googleTagManagerId: 1, metaPixelId: 1 } },
+      { $set: { pages, updatedBy: auth.user._id }, $unset: { sitewideTags: 1, googleAnalyticsId: 1, googleTagManagerId: 1, metaPixelId: 1 } },
       { upsert: true, runValidators: true },
     );
     const retainedImages = new Set(pages.map((page) => page.openGraphImage).filter((url): url is string => Boolean(url)));
@@ -54,6 +53,6 @@ export async function PUT(request: NextRequest) {
     const cleanup = await Promise.allSettled(replacedImages.map(deleteSeoOgImage));
     const cleanupFailed = cleanup.some((result) => result.status === "rejected");
     revalidatePath("/", "layout");
-    return apiSuccess(cleanupFailed ? "SEO settings saved, but an old OG image could not be removed" : "SEO settings saved", { pages, sitewideTags: value.sitewideTags, cleanupWarning: cleanupFailed });
+    return apiSuccess(cleanupFailed ? "SEO settings saved, but an old OG image could not be removed" : "SEO settings saved", { pages, cleanupWarning: cleanupFailed });
   } catch { return apiError("Unable to save SEO settings", 500); }
 }
